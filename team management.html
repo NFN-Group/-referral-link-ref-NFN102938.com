@@ -95,7 +95,7 @@
   z-index: 9999;
 }
 
-..qr-modal img {
+.qr-modal img {
   width: 320px;
   max-width: 90%;
   height: auto;
@@ -262,23 +262,27 @@ document.getElementById("levelBack").addEventListener("click", () => {
 });
 </script>
   <script>
-document.getElementById("qrCode").addEventListener("click", () => {
-  const img = document.querySelector("#qrCode img");
-  const canvas = document.querySelector("#qrCode canvas");
+document.addEventListener("click", function(e) {
+  if (e.target.closest("#qrCode")) {
 
-  if (img) {
-    document.getElementById("qrBig").src = img.src;
-  } else if (canvas) {
-    document.getElementById("qrBig").src = canvas.toDataURL("image/png");
-  } else {
-    return;
+    const canvas = document.querySelector("#qrCode canvas");
+    const img = document.querySelector("#qrCode img");
+
+    if (canvas) {
+      document.getElementById("qrBig").src = canvas.toDataURL("image/png");
+    } else if (img) {
+      document.getElementById("qrBig").src = img.src;
+    } else {
+      alert("QR Code not ready yet.");
+      return;
+    }
+
+    document.getElementById("qrModal").style.display = "flex";
   }
 
-  document.getElementById("qrModal").style.display = "flex";
-});
-
-document.getElementById("qrModal").addEventListener("click", () => {
-  document.getElementById("qrModal").style.display = "none";
+  if (e.target.id === "qrModal") {
+    document.getElementById("qrModal").style.display = "none";
+  }
 });
 </script>
 </body>
