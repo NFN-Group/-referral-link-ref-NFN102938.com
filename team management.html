@@ -232,7 +232,7 @@ if (!code) {
       const referrals = doc.data().referrals || [];
 
       // Set referral link
-        const LIVE_DOMAIN = "nfn-group.github.io/NFN";
+        const LIVE_DOMAIN = "https://nfn-group.github.io/NFN";
 const referralLink = `${LIVE_DOMAIN}?ref=${code}`;
 document.getElementById("userReferralLink").value = referralLink;
 // Generate QR Code
@@ -268,48 +268,29 @@ document.getElementById("levelBack").addEventListener("click", () => {
 });
 </script>
   <script>
-document.addEventListener("click", function(e) {
-  if (e.target.closest("#qrCode")) {
+ document.addEventListener("click", function(e) {
+    if (e.target.closest("#qrCode")) {
 
-    const canvas = document.querySelector("#qrCode canvas");
-    const img = document.querySelector("#qrCode img");
+        const canvas = document.querySelector("#qrCode canvas");
+        const img = document.querySelector("#qrCode img");
 
-    if (canvas) {
-      document.getElementById("qrBig").src = canvas.toDataURL("image/png");
-    } else if (img) {
-      document.getElementById("qrBig").src = img.src;
-    } else {
-      alert("QR Code not ready yet.");
-      return;
+        if (canvas) {
+            document.getElementById("qrBig").src = canvas.toDataURL("image/png");
+        } else if (img) {
+            document.getElementById("qrBig").src = img.src;
+        } else {
+            alert("QR Code not ready yet.");
+            return;
+        }
+
+        document.getElementById("qrModal").style.display = "flex";
     }
 
-    document.getElementById("qrModal").style.display = "flex";
-  }
-
-  if (e.target.id === "qrModal") {
-    document.getElementById("qrModal").style.display = "none";
-  }function shareWhatsApp() {
-    const referralLink = document.getElementById("userReferralLink").value;
-
-    if (!referralLink || referralLink.includes("Login")) {
-        alert("Referral link is not available.");
-        return;
+    if (e.target.id === "qrModal") {
+        document.getElementById("qrModal").style.display = "none";
     }
+}); // <-- You forgot this line
 
-    const message =
-`🔥 Join NFN today and start earning!
-
-Use my referral link to register:
-${referralLink}
-
-Don't miss this opportunity!`;
-
-    const whatsappURL =
-        "https://wa.me/?text=" + encodeURIComponent(message);
-
-    window.open(whatsappURL, "_blank");
-}
-});
 function shareWhatsApp() {
     const referralLink = document.getElementById("userReferralLink").value;
 
