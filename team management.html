@@ -140,6 +140,12 @@
         <div class="muted">Scan QR code or copy link</div>
         <input type="text" id="userReferralLink" placeholder="Login to see your link" readonly />
         <div class="copy" onclick="copyReferralLink()">Copy Link</div>
+
+<div class="copy"
+     style="background:#25D366; color:white; margin-top:10px;"
+     onclick="shareWhatsApp()">
+    <i class="fab fa-whatsapp"></i> Share to WhatsApp
+</div>
       </div>
     </div>
   </div>
@@ -282,8 +288,49 @@ document.addEventListener("click", function(e) {
 
   if (e.target.id === "qrModal") {
     document.getElementById("qrModal").style.display = "none";
-  }
+  }function shareWhatsApp() {
+    const referralLink = document.getElementById("userReferralLink").value;
+
+    if (!referralLink || referralLink.includes("Login")) {
+        alert("Referral link is not available.");
+        return;
+    }
+
+    const message =
+`🔥 Join NFN today and start earning!
+
+Use my referral link to register:
+${referralLink}
+
+Don't miss this opportunity!`;
+
+    const whatsappURL =
+        "https://wa.me/?text=" + encodeURIComponent(message);
+
+    window.open(whatsappURL, "_blank");
+}
 });
+function shareWhatsApp() {
+    const referralLink = document.getElementById("userReferralLink").value;
+
+    if (!referralLink || referralLink.includes("Login")) {
+        alert("Referral link is not available.");
+        return;
+    }
+
+    const message =
+`🔥 Join NFN today and start earning!
+
+Use my referral link to register:
+${referralLink}
+
+Don't miss this opportunity!`;
+
+    const whatsappURL =
+        "https://wa.me/?text=" + encodeURIComponent(message);
+
+    window.open(whatsappURL, "_blank");
+}
 </script>
 </body>
 </html>  
