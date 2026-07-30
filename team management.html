@@ -154,33 +154,64 @@
   <img id="qrBig">
 </div>
   
-  <!-- REFERRAL CENTER -->
-  <div class="card">
-    <div class="banner">Referral Reward Center<br><span class="muted">Gift packs are sent continuously</span></div>
-    <p class="muted" style="margin-top:12px;">
-      When your A-level subordinates become full-time employees and reach the corresponding number, you will receive rewards.
-    </p>
-    <div class="reward">
-      <div class="reward-left"><b>2000</b> – Invite 2 A-level members on the same day</div>
-      <div class="status">Not completed</div>
+<!-- REFERRAL CENTER -->
+<div class="card">
+    <div class="banner">
+        Referral Reward Center<br>
+        <span class="muted">Gift packs are sent continuously</span>
     </div>
-    <div class="reward">
-      <div class="reward-left"><b>5000</b> – Cumulative invitations this week (10 people)</div>
-      <div class="status">Not completed</div>
-    </div>
-    <div class="progress"><div class="bar" id="bar1" style="width:40%"></div></div>
-    <div class="reward">
-      <div class="reward-left"><b>20000</b> – Cumulative invitations this week (20 people)</div>
-      <div class="status">Not completed</div>
-    </div>
-    <div class="progress"><div class="bar" id="bar2" style="width:20%"></div></div>
-    <div class="reward">
-      <div class="reward-left"><b>50000</b> – Cumulative invitations this week (50 people)</div>
-      <div class="status">Not completed</div>
-    </div>
-    <div class="progress"><div class="bar" id="bar3" style="width:10%"></div></div>
-  </div>
 
+    <p class="muted" style="margin-top:12px;">
+        When your A-level subordinates become full-time employees and reach the corresponding number, you will receive rewards.
+    </p>
+
+    <!-- Reward 1 -->
+    <div class="reward">
+        <div class="reward-left">
+            <b>2000</b> – Invite 2 A-level members on the same day
+        </div>
+        <div class="status" id="status1">Not completed</div>
+    </div>
+
+    <div class="progress">
+        <div class="bar" id="bar1"></div>
+    </div>
+
+    <!-- Reward 2 -->
+    <div class="reward">
+        <div class="reward-left">
+            <b>5000</b> – Cumulative invitations this week (10 people)
+        </div>
+        <div class="status" id="status2">Not completed</div>
+    </div>
+
+    <div class="progress">
+        <div class="bar" id="bar2"></div>
+    </div>
+
+    <!-- Reward 3 -->
+    <div class="reward">
+        <div class="reward-left">
+            <b>20000</b> – Cumulative invitations this week (20 people)
+        </div>
+        <div class="status" id="status3">Not completed</div>
+    </div>
+
+    <div class="progress">
+        <div class="bar" id="bar3"></div>
+    </div>
+
+    <!-- Reward 4 -->
+    <div class="reward">
+        <div class="reward-left">
+            <b>50000</b> – Cumulative invitations this week (50 people)
+        </div>
+        <div class="status" id="status4">Not completed</div>
+    </div>
+
+    <div class="progress">
+        <div class="bar" id="bar4"></div>
+    </div>
 </div>
 
 <script>
@@ -230,6 +261,35 @@ if (!code) {
   code = name.replace(/[^a-zA-Z]/g, "").substring(0, 6).toUpperCase();
 }
       const referrals = doc.data().referrals || [];
+      const total = referrals.length;
+
+// Reward 1
+document.getElementById("bar1").style.width =
+Math.min((total / 2) * 100, 100) + "%";
+
+document.getElementById("status1").innerText =
+total >= 2 ? "Completed" : "Not completed";
+
+// Reward 2
+document.getElementById("bar2").style.width =
+Math.min((total / 10) * 100, 100) + "%";
+
+document.getElementById("status2").innerText =
+total >= 10 ? "Completed" : "Not completed";
+
+// Reward 3
+document.getElementById("bar3").style.width =
+Math.min((total / 20) * 100, 100) + "%";
+
+document.getElementById("status3").innerText =
+total >= 20 ? "Completed" : "Not completed";
+
+// Reward 4
+document.getElementById("bar4").style.width =
+Math.min((total / 50) * 100, 100) + "%";
+
+document.getElementById("status4").innerText =
+total >= 50 ? "Completed" : "Not completed";
 
       // Set referral link
         const LIVE_DOMAIN = "https://nfn-group.github.io/NFN";
