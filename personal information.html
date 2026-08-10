@@ -205,6 +205,25 @@
   text-align: right;
 }
   </style>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyADLqKyrJgH6FPpyRiVnFoBCBgch1Eoz2E",
+  authDomain: "nfn-groups-3b46a.firebaseapp.com",
+  projectId: "nfn-groups-3b46a",
+  storageBucket: "nfn-groups-3b46a.firebasestorage.app",
+  messagingSenderId: "767916530435",
+  appId: "1:767916530435:web:e78d289847869df1abe736"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
+const auth = firebase.auth();
+</script>
 </head>
 <body>
 
@@ -354,7 +373,7 @@
   <option>SmartCash</option>
   <option>KudaPay</option>
 </select>
-          </select>
+
           <div class="muted-small">Scroll to choose (list shows multiple options)</div>
         </div>
 
@@ -422,150 +441,29 @@
   </div>
 </div>
 
- <script>
+<script>
 document.addEventListener('DOMContentLoaded', () => {
-  
-  function verifyWithdrawalPin(inputPin) {
-    const savedPin = localStorage.getItem('withdrawPin'); // get the PIN from personal info
-    if (inputPin === savedPin) {
-        showMsg('PIN correct! Proceeding...', 'success');
-        // Here you can allow the withdrawal or go to next step
-        // For example: alert('Withdrawal allowed!');
-    } else {
-        showMsg('Incorrect PIN!', 'error'); // red popup if wrong
-        resetPin(); // clears the entered PIN
-    }
-}
-  
-  // Back button on main Personal Information page
-const topBack = document.querySelector('#page1 .back');
-if (topBack) {
-  topBack.addEventListener('click', () => {
-    window.location.href = 'my project.html';
-  });
-}
-  
-  /* --- Elements (all looked up after DOM ready) --- */
-  const withdrawRow = document.getElementById('withdrawRow');
+
+  /* =========================
+     ELEMENTS
+  ========================= */
   const page1 = document.getElementById('page1');
   const page2 = document.getElementById('page2');
   const page3 = document.getElementById('page3');
+  const page4 = document.getElementById('page4');
+
+  const topBack = document.querySelector('#page1 .back');
   const goBack = document.getElementById('goBack');
   const bankBack = document.getElementById('bankBack');
+  const inviteBack = document.getElementById('inviteBack');
+
+  const withdrawRow = document.getElementById('withdrawRow');
+  const withdrawAction = document.getElementById('withdrawAction');
+
   const pinBoxes = document.querySelectorAll('.pin-box');
   const keypad = document.getElementById('keypad');
   const pinTitle = document.getElementById('pinTitle');
-  const withdrawAction = document.getElementById('withdrawAction');
-  const loginPasswordRow = document.getElementById('loginPasswordRow');
-  // also the inner muted-click inside the login row (in case user taps the text)
-  const loginPasswordInner = loginPasswordRow ? loginPasswordRow.querySelector('.muted-click') : null;
 
-  /* --- PIN state --- */
-  let step = 'new';
-  let newPin = '';
-  let confirmPin = '';
-  let currentPin = [];
-
-  // Load saved PIN from localStorage
-  let savedPin = localStorage.getItem('withdrawPin') || '';
-  let hasPin = !!savedPin;
-  if (hasPin && withdrawAction) withdrawAction.textContent = 'Change PIN';
-
-  /* --- small safe helper to show messages --- */
-  function showMsg(text, type = 'error') {
-    // keep same behavior as your original showMsg
-    const msg = document.createElement('div');
-    msg.className = `msg ${type}`;
-    msg.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span> ${text}`;
-    document.body.appendChild(msg);
-    setTimeout(() => msg.remove(), 3000);
-  }
-
-  /* --- PIN UI helpers --- */
-  function resetPin() {
-    currentPin = [];
-    pinBoxes.forEach(b => (b.textContent = ''));
-  }
-
-  function renderPin() {
-    pinBoxes.forEach((b, i) => (b.textContent = currentPin[i] ? '•' : ''));
-  }
-
-  /* --- Keypad handler (guarded) --- */
-  if (keypad) {
-    keypad.addEventListener('click', (e) => {
-      if (e.target.tagName !== 'BUTTON') return;
-      const val = e.target.textContent.trim();
-      if (val === '⌫') {
-        currentPin.pop();
-      } else if (/^[0-9]$/.test(val) && currentPin.length < 6) {
-        currentPin.push(val);
-      }
-      renderPin();
-
-      if (currentPin.length === 6) {
-        const pin = currentPin.join('');
-        if (step === 'verifyOld') {
-          if (pin === savedPin) {
-            step = 'new';
-            if (pinTitle) pinTitle.textContent = 'Please enter your new 6-digit PIN';
-            resetPin();
-          } else {
-            showMsg('Incorrect old PIN!', 'error');
-            resetPin();
-          }
-        } else if (step === 'new') {
-          newPin = pin;
-          step = 'confirm';
-          if (pinTitle) pinTitle.textContent = 'Please confirm your 6-digit PIN';
-          resetPin();
-        } else if (step === 'confirm') {
-          confirmPin = pin;
-          if (confirmPin === newPin) {
-            savedPin = newPin;
-            hasPin = true;
-            localStorage.setItem('withdrawPin', savedPin); // persist
-            if (withdrawAction) withdrawAction.textContent = 'Change PIN';
-            showMsg('PIN set successfully!', 'success');
-            page2.classList.remove('active');
-            page1.classList.add('active');
-          } else {
-            showMsg('PINs do not match!', 'error');
-            step = 'new';
-            if (pinTitle) pinTitle.textContent = 'Please enter your 6-digit PIN';
-            resetPin();
-          }
-        }
-      }
-    });
-  }
-
-  /* --- Withdraw Row click (guarded) --- */
-  if (withdrawRow) {
-    withdrawRow.addEventListener('click', () => {
-      page1.classList.remove('active');
-      page2.classList.add('active');
-      resetPin();
-      if (hasPin) {
-        step = 'verifyOld';
-        if (pinTitle) pinTitle.textContent = 'Please enter your old 6-digit PIN';
-      } else {
-        step = 'new';
-        if (pinTitle) pinTitle.textContent = 'Please enter your 6-digit PIN';
-      }
-    });
-  }
-
-  /* --- goBack for PIN page --- */
-  if (goBack) {
-    goBack.addEventListener('click', () => {
-      page2.classList.remove('active');
-      page1.classList.add('active');
-      resetPin();
-    });
-  }
-
-  /* --- Bank card logic (guarded heavily) --- */
   const bankAction = document.getElementById('bankAction');
   const bankSelect = document.getElementById('bankSelect');
   const accountNameInput = document.getElementById('accountName');
@@ -574,232 +472,992 @@ if (topBack) {
   const bankCancelBtn = document.getElementById('bankCancelBtn');
   const bankCardContainer = document.getElementById('bankCardContainer');
 
-  const BANK_KEY = 'bankInfo';
+  const inviteFriendsRow = document.getElementById('inviteFriendsRow');
+  const inviteLink = document.getElementById('inviteLink');
+  const copyLink = document.getElementById('copyLink');
 
+  const emailDisplay = document.getElementById('emailDisplay');
+  const loginPasswordRow = document.getElementById('loginPasswordRow');
+
+
+  /* =========================
+     PIN STATE
+  ========================= */
+  let step = 'new';
+  let newPin = '';
+  let confirmPin = '';
+  let currentPin = [];
+
+let savedPin = '';
+let hasPin = false;
+let currentUser = null;
+
+
+  /* =========================
+     MESSAGE
+  ========================= */
+  function showMsg(text, type = 'error') {
+    const msg = document.createElement('div');
+
+    msg.className = `msg ${type}`;
+
+    msg.innerHTML =
+      `<span>${type === 'success' ? '✅' : '❌'}</span> ${text}`;
+
+    document.body.appendChild(msg);
+
+    setTimeout(() => {
+      msg.remove();
+    }, 3000);
+  }
+
+
+  /* =========================
+     PIN UI
+  ========================= */
+  function resetPin() {
+    currentPin = [];
+
+    pinBoxes.forEach(box => {
+      box.textContent = '';
+    });
+  }
+
+
+  function renderPin() {
+    pinBoxes.forEach((box, index) => {
+      box.textContent = currentPin[index] ? '•' : '';
+    });
+  }
+
+
+  /* =========================
+     LOAD WITHDRAWAL PIN
+  ========================= */
+  async function loadWithdrawalPin(user) {
+
+    if (!user) {
+      savedPin = '';
+      hasPin = false;
+
+      if (withdrawAction) {
+        withdrawAction.textContent = 'Click Settings';
+      }
+
+      return;
+    }
+
+    try {
+
+      const doc = await db
+        .collection('users')
+        .doc(user.uid)
+        .get();
+
+      if (doc.exists && doc.data().withdrawPin) {
+
+        savedPin = String(doc.data().withdrawPin);
+        hasPin = true;
+
+        if (withdrawAction) {
+          withdrawAction.textContent = 'Change PIN';
+        }
+
+      } else {
+
+        savedPin = '';
+        hasPin = false;
+
+        if (withdrawAction) {
+          withdrawAction.textContent = 'Click Settings';
+        }
+      }
+
+    } catch (error) {
+
+      console.error('Error loading withdrawal PIN:', error);
+
+      savedPin = '';
+      hasPin = false;
+
+      if (withdrawAction) {
+        withdrawAction.textContent = 'Click Settings';
+      }
+    }
+  }
+
+
+  /* =========================
+     PIN KEYPAD
+  ========================= */
+  if (keypad) {
+
+    keypad.addEventListener('click', async (e) => {
+
+      if (e.target.tagName !== 'BUTTON') return;
+
+      const val = e.target.textContent.trim();
+
+
+      /* BACKSPACE */
+      if (val === '⌫') {
+
+        currentPin.pop();
+        renderPin();
+
+        return;
+      }
+
+
+      /* NUMBERS ONLY */
+      if (!/^[0-9]$/.test(val)) return;
+
+      if (currentPin.length >= 6) return;
+
+      currentPin.push(val);
+
+      renderPin();
+
+
+      /* WAIT FOR 6 DIGITS */
+      if (currentPin.length !== 6) return;
+
+      const pin = currentPin.join('');
+
+
+      /* =========================
+         VERIFY OLD PIN
+      ========================= */
+      if (step === 'verifyOld') {
+
+        if (pin === savedPin) {
+
+          step = 'new';
+
+          if (pinTitle) {
+            pinTitle.textContent =
+              'Please enter your new 6-digit PIN';
+          }
+
+          resetPin();
+
+        } else {
+
+          showMsg('Incorrect old PIN!', 'error');
+
+          resetPin();
+        }
+
+        return;
+      }
+
+
+      /* =========================
+         ENTER NEW PIN
+      ========================= */
+      if (step === 'new') {
+
+        newPin = pin;
+
+        step = 'confirm';
+
+        if (pinTitle) {
+          pinTitle.textContent =
+            'Please confirm your 6-digit PIN';
+        }
+
+        resetPin();
+
+        return;
+      }
+
+
+      /* =========================
+         CONFIRM NEW PIN
+      ========================= */
+      if (step === 'confirm') {
+
+        confirmPin = pin;
+
+
+        /* PIN MATCH */
+        if (confirmPin === newPin) {
+
+          const user = auth.currentUser;
+
+
+          if (!user) {
+
+            showMsg('Please login first', 'error');
+
+            resetPin();
+
+            return;
+          }
+
+
+          try {
+
+            await db
+              .collection('users')
+              .doc(user.uid)
+              .set({
+                withdrawPin: newPin
+              }, {
+                merge: true
+              });
+
+
+            savedPin = newPin;
+            hasPin = true;
+
+
+            if (withdrawAction) {
+              withdrawAction.textContent = 'Change PIN';
+            }
+
+
+            showMsg(
+              'PIN set successfully!',
+              'success'
+            );
+
+
+            page2.classList.remove('active');
+            page1.classList.add('active');
+
+            resetPin();
+
+
+          } catch (error) {
+
+            console.error(
+              'Error saving PIN:',
+              error
+            );
+
+            showMsg(
+              'Failed to save PIN',
+              'error'
+            );
+
+            resetPin();
+          }
+
+
+        }
+
+
+        /* PIN DOES NOT MATCH */
+        else {
+
+          showMsg(
+            'PINs do not match!',
+            'error'
+          );
+
+          step = 'new';
+
+          if (pinTitle) {
+            pinTitle.textContent =
+              'Please enter your 6-digit PIN';
+          }
+
+          resetPin();
+        }
+      }
+
+    });
+  }
+
+
+  /* =========================
+     WITHDRAW PIN PAGE
+  ========================= */
+  if (withdrawRow) {
+
+    withdrawRow.addEventListener('click', () => {
+
+      page1.classList.remove('active');
+      page2.classList.add('active');
+
+      resetPin();
+
+      if (hasPin) {
+
+        step = 'verifyOld';
+
+        if (pinTitle) {
+          pinTitle.textContent =
+            'Please enter your old 6-digit PIN';
+        }
+
+      } else {
+
+        step = 'new';
+
+        if (pinTitle) {
+          pinTitle.textContent =
+            'Please enter your 6-digit PIN';
+        }
+      }
+
+    });
+  }
+
+
+  /* =========================
+     BACK FROM PIN
+  ========================= */
+  if (goBack) {
+
+    goBack.addEventListener('click', () => {
+
+      page2.classList.remove('active');
+      page1.classList.add('active');
+
+      resetPin();
+    });
+  }
+
+
+  /* =========================
+     BANK INFORMATION
+  ========================= */
   function maskAccountNumber(num) {
+
     if (!num) return '';
+
     const s = String(num).replace(/\s+/g, '');
+
     if (s.length <= 4) return s;
+
     const last = s.slice(-4);
+
     return '**** **** **** ' + last;
   }
 
-  function loadBankInfo() {
-    const raw = localStorage.getItem(BANK_KEY);
-    if (!raw) return null;
-    try { return JSON.parse(raw); } catch (e) { return null; }
+
+  async function loadBankInfo(user) {
+
+    if (!user) return null;
+
+    try {
+
+      const doc = await db
+        .collection('users')
+        .doc(user.uid)
+        .get();
+
+      if (doc.exists) {
+        return doc.data().bankInfo || null;
+      }
+
+      return null;
+
+    } catch (error) {
+
+      console.error(
+        'Error loading bank information:',
+        error
+      );
+
+      return null;
+    }
   }
 
-  function renderBankSummary() {
-    const info = loadBankInfo();
+
+  async function renderBankSummary(user) {
+
     if (!bankAction) return;
+
+    const info = await loadBankInfo(user);
+
+
     if (info) {
-      bankAction.textContent = `${maskAccountNumber(info.accountNumber)} • ${info.bankName}`;
+
+      bankAction.textContent =
+        `${maskAccountNumber(info.accountNumber)} • ${info.bankName}`;
+
       bankAction.style.color = '#0b84ff';
+
     } else {
+
       bankAction.textContent = 'Click Settings';
+
       bankAction.style.color = '';
     }
   }
 
-  renderBankSummary();
 
-  // open bank page function (guarded)
-  function openBankPage() {
+  /* =========================
+     OPEN BANK PAGE
+  ========================= */
+  async function openBankPage() {
+
     if (!page1 || !page3) return;
+
     page1.classList.remove('active');
     page3.classList.add('active');
-    const info = loadBankInfo();
-    if (info && bankSelect && accountNameInput && accountNumberInput && bankSaveBtn && bankCardContainer) {
-      bankSelect.value = info.bankName || '';
-      accountNameInput.value = info.accountName || '';
-      accountNumberInput.value = info.accountNumber || '';
+
+    const user = auth.currentUser;
+
+    if (!user) {
+
+      showMsg(
+        'Please login first',
+        'error'
+      );
+
+      page3.classList.remove('active');
+      page1.classList.add('active');
+
+      return;
+    }
+
+
+    const info = await loadBankInfo(user);
+
+
+    if (info) {
+
+      bankSelect.value =
+        info.bankName || '';
+
+      accountNameInput.value =
+        info.accountName || '';
+
+      accountNumberInput.value =
+        info.accountNumber || '';
+
+
       bankSelect.disabled = true;
-      accountNameInput.setAttribute('readonly', 'readonly');
-      accountNumberInput.setAttribute('readonly', 'readonly');
+
+      accountNameInput.setAttribute(
+        'readonly',
+        'readonly'
+      );
+
+      accountNumberInput.setAttribute(
+        'readonly',
+        'readonly'
+      );
+
       bankSaveBtn.disabled = true;
+
       bankSaveBtn.style.opacity = '0.6';
-      bankCardContainer.classList.add('locked');
-      const title = document.getElementById('bankTitle');
-      if (title) title.textContent = 'Bank details (locked)';
-    } else if (bankSelect && accountNameInput && accountNumberInput && bankSaveBtn && bankCardContainer) {
+
+      bankCardContainer.classList.add(
+        'locked'
+      );
+
+
+      const title =
+        document.getElementById('bankTitle');
+
+      if (title) {
+        title.textContent =
+          'Bank details (locked)';
+      }
+
+
+    } else {
+
       bankSelect.disabled = false;
-      accountNameInput.removeAttribute('readonly');
-      accountNumberInput.removeAttribute('readonly');
+
+      accountNameInput.removeAttribute(
+        'readonly'
+      );
+
+      accountNumberInput.removeAttribute(
+        'readonly'
+      );
+
       bankSaveBtn.disabled = false;
+
       bankSaveBtn.style.opacity = '1';
-      bankCardContainer.classList.remove('locked');
-      const title = document.getElementById('bankTitle');
-      if (title) title.textContent = 'Add bank details';
+
+      bankCardContainer.classList.remove(
+        'locked'
+      );
+
+
+      const title =
+        document.getElementById('bankTitle');
+
+      if (title) {
+        title.textContent =
+          'Add bank details';
+      }
+
+
       bankSelect.value = '';
       accountNameInput.value = '';
       accountNumberInput.value = '';
     }
   }
 
-  // attach bank click listeners safely
-  try {
-    if (bankAction) bankAction.addEventListener('click', openBankPage);
-    // fallback to clickable row around bankAction
-    const bankRowSafe = bankAction ? bankAction.closest('.row') : null;
-    if (bankRowSafe) bankRowSafe.addEventListener('click', openBankPage);
-  } catch (e) {
-    // ignore silently but show message in console
-    console.warn('bank action attach failed', e);
+
+  /* ONLY ONE BANK CLICK HANDLER */
+  const bankRow = bankAction
+    ? bankAction.closest('.row')
+    : null;
+
+  if (bankRow) {
+    bankRow.addEventListener(
+      'click',
+      openBankPage
+    );
   }
 
-  // Cancel/save handlers (guarded)
+
+  /* =========================
+     BANK CANCEL
+  ========================= */
   if (bankCancelBtn) {
-    bankCancelBtn.addEventListener('click', () => {
-      if (page3 && page1) { page3.classList.remove('active'); page1.classList.add('active'); }
-    });
-  }
 
-  if (bankSaveBtn) {
-    bankSaveBtn.addEventListener('click', () => {
-      const bankName = bankSelect && bankSelect.value && bankSelect.value.trim();
-      const accName = accountNameInput && accountNameInput.value && accountNameInput.value.trim();
-      const accNum = accountNumberInput && accountNumberInput.value && accountNumberInput.value.trim();
+    bankCancelBtn.addEventListener(
+      'click',
+      () => {
 
-      if (!bankName) { showMsg('Please select a bank', 'error'); return; }
-      if (!accName) { showMsg('Please enter account name', 'error'); return; }
-      if (!/^\d{10}$/.test(accNum)) { showMsg('Account number must be exactly 10 digits', 'error'); return; }
+        page3.classList.remove('active');
+        page1.classList.add('active');
 
-      if (localStorage.getItem(BANK_KEY)) {
-        showMsg('Bank info is locked and cannot be changed', 'error');
-        if (bankCardContainer) bankCardContainer.classList.add('locked');
-        return;
       }
-
-      const payload = { bankName, accountName: accName, accountNumber: accNum, savedAt: new Date().toISOString() };
-      localStorage.setItem(BANK_KEY, JSON.stringify(payload));
-      showMsg('Bank card saved', 'success');
-
-      if (bankSelect) bankSelect.disabled = true;
-      if (accountNameInput) accountNameInput.setAttribute('readonly', 'readonly');
-      if (accountNumberInput) accountNumberInput.setAttribute('readonly', 'readonly');
-      if (bankSaveBtn) bankSaveBtn.disabled = true;
-      if (bankCardContainer) bankCardContainer.classList.add('locked');
-      const title = document.getElementById('bankTitle');
-      if (title) title.textContent = 'Bank details (locked)';
-
-      renderBankSummary();
-
-      setTimeout(() => {
-        if (page3 && page71) { page3.classList.remove('active'); page1.classList.add('active'); }
-      }, 900);
-    });
+    );
   }
 
-  // bankBack handler
-  if (bankBack) bankBack.addEventListener('click', () => { if (page3 && page1) { page3.classList.remove('active'); page1.classList.add('active'); } });
 
-  // render summary at load
-  if (bankCardContainer && !localStorage.getItem(BANK_KEY)) bankCardContainer.classList.remove('locked');
+  /* =========================
+     SAVE BANK CARD
+  ========================= */
+  if (bankSaveBtn) {
 
-  /* --- THE LOGIN PASSWORD CLICK (safe attach) --- */
-  // Attach to the row and also to the inner text so clicks register.
-  function attachLoginPasswordHandler() {
-    const handler = () => showMsg('It can only be set or changed in the Register page', 'error');
-    try {
-      if (loginPasswordRow) loginPasswordRow.addEventListener('click', handler);
-      if (loginPasswordInner) loginPasswordInner.addEventListener('click', handler);
-    } catch (err) {
-      console.warn('Failed to attach login password handler', err);
-    }
+    bankSaveBtn.addEventListener(
+      'click',
+      async () => {
+
+        const bankName =
+          bankSelect.value.trim();
+
+        const accName =
+          accountNameInput.value.trim();
+
+        const accNum =
+          accountNumberInput.value.trim();
+
+
+        if (!bankName) {
+
+          showMsg(
+            'Please select a bank',
+            'error'
+          );
+
+          return;
+        }
+
+
+        if (!accName) {
+
+          showMsg(
+            'Please enter account name',
+            'error'
+          );
+
+          return;
+        }
+
+
+        if (!/^\d{10}$/.test(accNum)) {
+
+          showMsg(
+            'Account number must be exactly 10 digits',
+            'error'
+          );
+
+          return;
+        }
+
+
+        const user = auth.currentUser;
+
+
+        if (!user) {
+
+          showMsg(
+            'Please login first',
+            'error'
+          );
+
+          return;
+        }
+
+
+        try {
+
+          const existingBank =
+            await db
+              .collection('users')
+              .doc(user.uid)
+              .get();
+
+
+          if (
+            existingBank.exists &&
+            existingBank.data().bankInfo
+          ) {
+
+            showMsg(
+              'Bank info is locked and cannot be changed',
+              'error'
+            );
+
+            bankCardContainer.classList.add(
+              'locked'
+            );
+
+            return;
+          }
+
+
+          const payload = {
+
+            bankName: bankName,
+
+            accountName: accName,
+
+            accountNumber: accNum,
+
+            savedAt:
+              new Date().toISOString()
+          };
+
+
+          await db
+            .collection('users')
+            .doc(user.uid)
+            .set(
+              {
+                bankInfo: payload
+              },
+              {
+                merge: true
+              }
+            );
+
+
+          showMsg(
+            'Bank card saved',
+            'success'
+          );
+
+
+          bankSelect.disabled = true;
+
+          accountNameInput.setAttribute(
+            'readonly',
+            'readonly'
+          );
+
+          accountNumberInput.setAttribute(
+            'readonly',
+            'readonly'
+          );
+
+          bankSaveBtn.disabled = true;
+
+          bankSaveBtn.style.opacity = '0.6';
+
+          bankCardContainer.classList.add(
+            'locked'
+          );
+
+
+          const title =
+            document.getElementById('bankTitle');
+
+          if (title) {
+            title.textContent =
+              'Bank details (locked)';
+          }
+
+
+          await renderBankSummary(user);
+
+
+          setTimeout(() => {
+
+            page3.classList.remove('active');
+            page1.classList.add('active');
+
+          }, 900);
+
+
+        } catch (error) {
+
+          console.error(
+            'Error saving bank details:',
+            error
+          );
+
+          showMsg(
+            'Failed to save bank details',
+            'error'
+          );
+        }
+
+      }
+    );
   }
-  attachLoginPasswordHandler();
 
-  // small UX: give mute-click cursor so users know it's tappable
-  document.querySelectorAll('.muted-click').forEach(el => el.style.cursor = 'pointer');
 
-  // === INVITE FRIENDS FEATURE ===
-const inviteFriendsRow = document.getElementById('inviteFriendsRow');
-const inviteBack = document.getElementById('inviteBack');
-const inviteLink = document.getElementById('inviteLink');
-const copyLink = document.getElementById('copyLink');
-const page4 = document.getElementById('page4');
+  /* =========================
+     BANK BACK
+  ========================= */
+  if (bankBack) {
 
-// Open Invite Friends page
-if (inviteFriendsRow) {
-  inviteFriendsRow.addEventListener('click', () => {
-    page1.classList.remove('active');
-    page4.classList.add('active');
-  });
-}
+    bankBack.addEventListener(
+      'click',
+      () => {
 
-// Go back to main page
-if (inviteBack) {
-  inviteBack.addEventListener('click', () => {
-    page4.classList.remove('active');
-    page1.classList.add('active');
-  });
-}
+        page3.classList.remove('active');
+        page1.classList.add('active');
 
-// Copy referral link (works everywhere)
-if (copyLink) {
-  copyLink.addEventListener('click', () => {
-    const text = inviteLink.textContent.trim();
+      }
+    );
+  }
 
-    // Try modern API
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(text)
-        .then(() => showMsg('Link copied to clipboard!', 'success'))
-        .catch(() => fallbackCopy());
-    } else {
-      fallbackCopy();
+
+  /* =========================
+     LOGIN PASSWORD
+  ========================= */
+  if (loginPasswordRow) {
+
+    loginPasswordRow.addEventListener(
+      'click',
+      () => {
+
+        showMsg(
+          'It can only be set or changed in the Register page',
+          'error'
+        );
+
+      }
+    );
+  }
+
+
+  /* =========================
+     INVITE FRIENDS
+  ========================= */
+  if (inviteFriendsRow) {
+
+    inviteFriendsRow.addEventListener(
+      'click',
+      () => {
+
+        page1.classList.remove('active');
+        page4.classList.add('active');
+
+      }
+    );
+  }
+
+
+  /* =========================
+     INVITE BACK
+  ========================= */
+  if (inviteBack) {
+
+    inviteBack.addEventListener(
+      'click',
+      () => {
+
+        page4.classList.remove('active');
+        page1.classList.add('active');
+
+      }
+    );
+  }
+
+
+  /* =========================
+     REFERRAL LINK
+  ========================= */
+  let referralCode =
+    localStorage.getItem('referralCode');
+
+
+  if (!referralCode) {
+
+    referralCode =
+      'REF' +
+      Math.random()
+        .toString(36)
+        .substring(2, 8)
+        .toUpperCase();
+
+    localStorage.setItem(
+      'referralCode',
+      referralCode
+    );
+  }
+
+
+  const referralLink =
+    `${window.location.origin}/index.html?ref=${referralCode}`;
+
+
+  if (inviteLink) {
+    inviteLink.textContent =
+      referralLink;
+  }
+
+
+  /* =========================
+     COPY LINK
+  ========================= */
+  if (copyLink) {
+
+    copyLink.addEventListener(
+      'click',
+      () => {
+
+        const text =
+          inviteLink.textContent.trim();
+
+
+        if (
+          navigator.clipboard &&
+          window.isSecureContext
+        ) {
+
+          navigator.clipboard
+            .writeText(text)
+            .then(() => {
+
+              showMsg(
+                'Link copied to clipboard!',
+                'success'
+              );
+
+            })
+            .catch(() => {
+
+              fallbackCopy();
+
+            });
+
+        } else {
+
+          fallbackCopy();
+
+        }
+
+
+        function fallbackCopy() {
+
+          const tempInput =
+            document.createElement(
+              'textarea'
+            );
+
+          tempInput.value = text;
+
+          document.body.appendChild(
+            tempInput
+          );
+
+          tempInput.select();
+
+          document.execCommand(
+            'copy'
+          );
+
+          document.body.removeChild(
+            tempInput
+          );
+
+          showMsg(
+            'Link copied!',
+            'success'
+          );
+        }
+
+      }
+    );
+  }
+
+
+  /* =========================
+     TOP BACK
+  ========================= */
+  if (topBack) {
+
+    topBack.addEventListener(
+      'click',
+      () => {
+
+        window.location.href =
+          'my project.html';
+
+      }
+    );
+  }
+
+
+/* =========================
+   FIREBASE AUTH STATE
+========================= */
+
+auth.onAuthStateChanged(async (user) => {
+
+  currentUser = user;
+
+  if (user) {
+
+    console.log('Firebase user logged in:', user.uid);
+    console.log('User email:', user.email);
+
+    if (emailDisplay) {
+      emailDisplay.textContent = user.email || 'Not set';
     }
 
-    // Backup copy method (always works)
-    function fallbackCopy() {
-      const tempInput = document.createElement('textarea');
-      tempInput.value = text;
-      document.body.appendChild(tempInput);
-      tempInput.select();
-      document.execCommand('copy');
-      document.body.removeChild(tempInput);
-      showMsg('Link copied!', 'success');
-    }
-  });
-}
-  
-  // === REFERRAL CODE GENERATION ===
-let referralCode = localStorage.getItem('referralCode');
+    await loadWithdrawalPin(user);
+    await renderBankSummary(user);
 
-if (!referralCode) {
-  referralCode = 'REF' + Math.random().toString(36).substring(2, 8).toUpperCase();
-  localStorage.setItem('referralCode', referralCode);
-}
+  } else {
 
-// Build referral link
-const referralLink = `${window.location.origin}/index.html?ref=${referralCode}`;
+    console.log('No Firebase user is currently logged in.');
 
-if (inviteLink) {
-  inviteLink.textContent = referralLink;
-}
-  
-  // === SHOW SAVED EMAIL FROM LOCALSTORAGE ===
-  const emailDisplay = document.getElementById('emailDisplay');
-  const savedEmail = localStorage.getItem('registeredEmail');
-  if (emailDisplay) {
-    if (savedEmail && savedEmail.trim() !== '') {
-      emailDisplay.textContent = savedEmail;
-    } else {
+    if (emailDisplay) {
       emailDisplay.textContent = 'Not set';
     }
+
+    if (withdrawAction) {
+      withdrawAction.textContent = 'Click Settings';
+    }
+
+    savedPin = '';
+    hasPin = false;
   }
-  
-}); // end DOMContentLoaded
- // ✅ Save or change withdrawal PIN (final version)
-function saveWithdrawalPin(pin) {
-  if (pin.length !== 6 || !/^\d+$/.test(pin)) {
-    alert("PIN must be exactly 6 digits");
-    return false;
-  }
-  localStorage.setItem("withdrawPin", pin);
-  alert("✅ Withdrawal PIN saved successfully!");
-  return true;
-}
+
+});
+
+
+  /* =========================
+     CLICK CURSOR
+  ========================= */
+  document
+    .querySelectorAll('.muted-click')
+    .forEach(el => {
+
+      el.style.cursor = 'pointer';
+
+    });
+
+});
 </script>
 </body>
 </html>
